@@ -13,8 +13,8 @@
 "                                                                                                                        " | Write-Host -BackgroundColor Black
 "  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~         Proceed?            ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~  " | Write-Host -ForegroundColor White -BackgroundColor Black
 
-# $confirmation = Read-Host "                                                      y/n: "
-$confirmation = "y"
+ $confirmation = Read-Host "                                                      y/n: "
+# $confirmation = "y"
 if ($confirmation -eq 'y') {
      $cmdOutput = chocolatey --yes | Out-String
      if(!$cmdOutput) {        
