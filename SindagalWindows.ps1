@@ -1,1 +1,1 @@
-Start-Process powershell -Verb runas -ArgumentList "-NoExit -c (cd '$pwd') ; .\modules\win-startup.ps1"
+Start-Process powershell -ExecutionPolicy Bypass -Verb runas -ArgumentList "-NoExit -c (cd '$pwd') ; .\modules\win-startup.ps1"
