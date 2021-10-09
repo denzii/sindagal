@@ -1,7 +1,6 @@
 # sindagal
 
-**Too lazy to write a proper readme so here is the info I pasted from within the code**
-                                         
+WORK IN PROGRESS                                         
                                          **Welcome to Sindagal Windows!** 
 "                                                                                                                        
 "                                              This script will:                                                         
