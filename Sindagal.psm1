@@ -9,24 +9,31 @@ function Test-Elevation {
 
 #############################################################################################################################################
 # Set Environment Variables For Initial Host System State
+# Tested ✓
 function Set-EnvState {
     Test-Elevation
-    $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1] 
+    $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1]
+    Write-Host "System has x${osArchitectureBits} bits" 
     Set-Item -Path Env:SINDAGAL_OS_BITS -Value ($osArchitectureBits)
 
     $osArchitecture = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[0] 
+    Write-Host "System has ${osArchitecture} processor"
     Set-Item -Path Env:SINDAGAL_OS_ARCHITECTURE -Value ($osArchitecture)
 
-    $osBuild = [int]((wmic os get BuildNumber) -split  '(?=\d)',2)[3] 
+    $osBuild = [int]((wmic os get BuildNumber) -split  '(?=\d)',2)[3]
+    Write-Host "OS build is ${osBuild}" 
     Set-Item -Path Env:SINDAGAL_OS_BUILD -Value ($osBuild)
 
     $osVersion = [int](Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ReleaseId 
+    Write-Host "OS version is ${osBuild}" 
     Set-Item -Path Env:SINDAGAL_OS_VER -Value ($osVersion)
 
     $isWslEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq Microsoft-Windows-Subsystem-Linux).State) -eq "Enabled"
+    Write-Host "Does the system have WSL enabled?: ${isWslEnabled}"
     Set-Item -Path Env:SINDAGAL_INIT_WSL -Value ($isWslEnabled)
     
     $isVirtualMachineEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq VirtualMachinePlatform).State) -eq "Enabled"
+    Write-Host "Does the system have Virtual Machine Platform enabled?: ${isVirtualMachineEnabled}"
     Set-Item -Path Env:SINDAGAL_INIT_VMP -Value ($isVirtualMachineEnabled)
 }
 
