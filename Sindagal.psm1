@@ -10,6 +10,7 @@ function Test-Elevation {
 #############################################################################################################################################
 # Set Environment Variables For Initial Host System State
 function Set-EnvState {
+    Test-Elevation
     $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1] 
     Set-Item -Path Env:SINDAGAL_OS_BITS -Value ($osArchitectureBits)
 
@@ -32,6 +33,7 @@ function Set-EnvState {
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
 function Set-AddonState {
+    Test-Elevation
     $isChocoInstalled = Test-Chocolatey
     $isWindowsTerminalInstalled = Test-WindowsTerminal
     $isOhMyPoshInstalled =  Test-OhMyPosh
@@ -57,6 +59,7 @@ function Test-WindowsTerminal {
 }
 
 function Enable-WindowsTerminal {
+     Test-Elevation
 	Write-Host "Installing Microsoft Terminal through Chocolatey" -ForegroundColor White -BackgroundColor Black
 	choco install microsoft-windows-terminal -y --pre 
     
@@ -77,12 +80,14 @@ function Enable-WindowsTerminal {
 }
 
 function Disable-WindowsTerminal {
+  Test-Elevation
     Write-Host "Removing Microsoft Windows Terminal Executable through Chocolatey" -ForegroundColor White -BackgroundColor Black
 
 	choco uninstall microsoft-windows-terminal -y --pre 
 }
 
 function Restore-WindowsTerminal {
+ Test-Elevation
     Write-Host "Restoring Microsoft Windows Terminal to its initial state" -ForegroundColor White -BackgroundColor Black
 
     $windowsTerminalConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
@@ -102,7 +107,8 @@ function Test-Chocolatey {
     return $isChocoInstalled
 }
 
-function Enable-Chocolatey {      
+function Enable-Chocolatey {    
+ Test-Elevation
     $InstallDir='C:\ProgramData\chocoportable'
     $env:ChocolateyInstall="$InstallDir"
         
@@ -131,6 +137,7 @@ function Test-OhMyPosh {
 }
 
 function Enable-OhMyPosh {
+ Test-Elevation
     Write-Host "Installing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
 	Install-Module oh-my-posh -Force -Scope CurrentUser
 }
@@ -152,11 +159,13 @@ function Test-PoshGit {
 }
 
 function Enable-PoshGit {
+ Test-Elevation
     Write-Host "Installing posh git powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
     Install-Module posh-git -Force -Scope CurrentUser
 }
 
 function Disable-PoshGit {
+ Test-Elevation
     Write-Host "Removing posh git powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
     Get-InstalledModule -Name posh-git | Uninstall-Module 
 }
@@ -174,6 +183,7 @@ function Test-Glyphs {
 }
 
 function Add-Glyphs {
+ Test-Elevation
     $cascadiaCodeURL = "https://github.com/AaronFriel/nerd-fonts/releases/download/v1.2.0/CascadiaCode.Nerd.Font.Complete.ttf"
 	$cascadiaDestinationPath = ".\cascadia-code"
 
@@ -198,6 +208,7 @@ function Add-Glyphs {
 }
 
 function Remove-Glyphs {
+ Test-Elevation
     $cascadiaDestinationPath = ".\cascadia-code"
     Write-Host "Iterating over ${cascadiaDestinationPath} folder contents to delete each font from the Host" -ForegroundColor White -BackgroundColor Black
     $files = Get-ChildItem "${cascadiaDestinationPath}"
@@ -246,6 +257,7 @@ function Test-WSL {
 }
 
 function Enable-WSL {
+ Test-Elevation
     try {
         Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
@@ -270,6 +282,7 @@ function Enable-WSL {
 }
 
 function Disable-WSL {
+ Test-Elevation
     try {
         Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
@@ -291,11 +304,13 @@ function Disable-WSL {
 }
 
 function New-Distro {
+ Test-Elevation
     Invoke-WebRequest -Uri https://aka.ms/wsl-debian-gnulinux -OutFile .\Debian.appx -UseBasicParsing
     Add-AppxPackage .\Debian.appx
 }
 
 function Remove-Distro {
+ Test-Elevation
     wsl.exe --unregister Debian
     Remove-AppxPackage .\Debian.appx
 }
