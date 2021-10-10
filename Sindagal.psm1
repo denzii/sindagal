@@ -1,5 +1,12 @@
 
 
+function Test-Elevation {
+    $Elevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    if ( -not $Elevated ) {
+      throw "This module requires elevation."
+    }
+}
+
 #############################################################################################################################################
 # Set Environment Variables For Initial Host System State
 function Set-EnvState {
@@ -21,7 +28,6 @@ function Set-EnvState {
     $isVirtualMachineEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq VirtualMachinePlatform).State) -eq "Enabled"
     Set-Item -Path Env:SINDAGAL_INIT_VMP -Value ($isVirtualMachineEnabled)
 }
-
 
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
@@ -436,7 +442,8 @@ Export-ModuleMember -function `
     Disable-WSL,`
     New-Distro,`
     Register-DistroAddons,`
-    Remove-Distro
+    Remove-Distro,`
+    Test-Elevation
 
 # TODO: Get the windows terminal settings path dynamically without hardcode
 # TODO: Handle the case where windows terminal initially exists (Write/Delete in settings.json rather than replacing completely)
