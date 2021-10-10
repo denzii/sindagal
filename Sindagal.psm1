@@ -121,6 +121,8 @@ function Disable-WindowsTerminal {
      if (!(Test-Chocolatey)) {
      	throw "This requires chocolatey, please run Enable-Choco function first"
      }
+
+     if (Test-WindowsTerminal) {
      Write-Host "Removing Microsoft Windows Terminal Executable through Chocolatey" -ForegroundColor White -BackgroundColor Black
      
      choco uninstall microsoft-windows-terminal -y --pre --force
@@ -128,6 +130,7 @@ function Disable-WindowsTerminal {
      # remove leftover appx package manually (for some reason choco is not reliably removing it)
      $windowsTerminalFullName = (Get-AppxPackage | Where-Object Name -eq "Microsoft.WindowsTerminalPreview").PackageFullName
      Remove-AppxPackage -Package $windowsTerminalFullName
+     }
 }
 
 function Restore-WindowsTerminal {
@@ -181,6 +184,8 @@ function Disable-Chocolatey {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
      }
+     
+    if(Test-Chocolatey){
      Write-Host "Uninstalling Chocolatey" -ForegroundColor White -BackgroundColor Black
      $InstallDir='C:\ProgramData\chocoportable'
      
@@ -188,10 +193,12 @@ function Disable-Chocolatey {
      Remove-Item $InstallDir -Recurse -Force 
      
      $env:ChocolateyInstall=$null
+    }
 }
 
 #############################################################################################################################################
 
+# Tested ✓
 function Test-OhMyPosh {
     [OutputType([boolean])]
 
@@ -201,21 +208,26 @@ function Test-OhMyPosh {
     return $isOhMyPoshInstalled
 }
 
+# Tested ✓
 function Enable-OhMyPosh {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
      }   
      Write-Host "Installing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
-     Install-Module oh-my-posh -Force -Scope CurrentUser
+     ECHO Y | powershell Install-Module oh-my-posh -Force -Scope CurrentUser
 }
 
+# Tested ✓
 function Disable-OhMyPosh {
-    Write-Host "Removing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
-    Get-InstalledModule -Name oh-my-posh | Uninstall-Module 
+    if(Test-OhMyPosh){
+    	Write-Host "Removing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
+    	Get-InstalledModule -Name oh-my-posh | Uninstall-Module 
+    }
 }
 
 #############################################################################################################################################
 
+# Tested ✓
 function Test-PoshGit {
     [OutputType([boolean])]
 
@@ -225,20 +237,24 @@ function Test-PoshGit {
     return $isPoshGitInstalled
 }
 
+# Tested ✓
 function Enable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
      }   
     Write-Host "Installing posh git powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
-    Install-Module posh-git -Force -Scope CurrentUser
+     ECHO Y | powershell Install-Module posh-git -Force -Scope CurrentUser
 }
 
+# Tested ✓
 function Disable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
-     }   
-    Write-Host "Removing posh git powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
-    Get-InstalledModule -Name posh-git | Uninstall-Module 
+     }  
+    if (Test-PoshGit){ 
+    	Write-Host "Removing posh git powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
+    	Get-InstalledModule -Name posh-git | Uninstall-Module 
+    }
 }
 
 #############################################################################################################################################
@@ -256,12 +272,14 @@ function Test-Glyphs {
 function Add-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
-    }   
-    $cascadiaCodeURL = "https://github.com/AaronFriel/nerd-fonts/releases/download/v1.2.0/CascadiaCode.Nerd.Font.Complete.ttf"
-    $cascadiaDestinationPath = ".\cascadia-code"
+    }
+    
+    if(!(Test-Glyphs)){   
+    	$cascadiaCodeURL = "https://github.com/AaronFriel/nerd-fonts/releases/download/v1.2.0/CascadiaCode.Nerd.Font.Complete.ttf"
+    	$cascadiaDestinationPath = ".\cascadia-code"
 
 	If(!(test-path $cascadiaDestinationPath)){
-		New-Item -Path $cascadiaDestinationPath -ItemType "directory"
+       	    New-Item -Path $cascadiaDestinationPath -ItemType "directory"
 	}
 	
 	Write-Host "Downloading Cascadia Code NF Patch from" -ForegroundColor White -BackgroundColor Black
@@ -272,25 +290,28 @@ function Add-Glyphs {
 	}
 
 	Write-Host "Iterating over ${cascadiaDestinationPath} folder contents to save each font on the Host" -ForegroundColor White -BackgroundColor Black
-    $files = Get-ChildItem "${cascadiaDestinationPath}"
+        $files = Get-ChildItem "${cascadiaDestinationPath}"
 
-    foreach ($f in $files){
-        $FontFile = [System.IO.FileInfo]$f
-        Install-Font -FontFile $FontFile
+        foreach ($f in $files){
+            $FontFile = [System.IO.FileInfo]$f
+            Install-Font -FontFile $FontFile
+        }
     }
 }
 
 function Remove-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
-    }   
-    $cascadiaDestinationPath = ".\cascadia-code"
-    Write-Host "Iterating over ${cascadiaDestinationPath} folder contents to delete each font from the Host" -ForegroundColor White -BackgroundColor Black
-    $files = Get-ChildItem "${cascadiaDestinationPath}"
+    } 
+    if(Test-Glyphs){  
+        $cascadiaDestinationPath = ".\cascadia-code"
+        Write-Host "Iterating over ${cascadiaDestinationPath} folder contents to delete each font from the Host" -ForegroundColor White -BackgroundColor Black
+        $files = Get-ChildItem "${cascadiaDestinationPath}"
 
-    foreach ($f in $files){
-        $FontFile = [System.IO.FileInfo]$f
-        Remove-Font -FontFile $FontFile
+        foreach ($f in $files){
+            $FontFile = [System.IO.FileInfo]$f
+            Remove-Font -FontFile $FontFile
+        }
     }
 }
 #############################################################################################################################################
