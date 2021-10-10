@@ -4,7 +4,7 @@ function Test-Elevation {
     [OutputType([boolean])]
     $elevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     
-    return (-not $elevated)
+    return $elevated
 }
 
 #############################################################################################################################################
@@ -12,8 +12,9 @@ function Test-Elevation {
 # Tested ✓
 function Set-EnvState {
     if(!(Test-Elevation)){
-    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    	throw "This requires admin privileges! Please run it through an elevated powershell prompt."
     }
+    Write-Host "Setting initial system state..."
     
     $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1]
     Write-Host "System has x${osArchitectureBits} bits" 
@@ -32,25 +33,37 @@ function Set-EnvState {
     Set-Item -Path Env:SINDAGAL_OS_VER -Value ($osVersion)
 
     $isWslEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq Microsoft-Windows-Subsystem-Linux).State) -eq "Enabled"
-    Write-Host "Does the system have WSL enabled?: ${isWslEnabled}"
+    Write-Host "System has WSL enabled?: ${isWslEnabled}"
     Set-Item -Path Env:SINDAGAL_INIT_WSL -Value ($isWslEnabled)
     
     $isVirtualMachineEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq VirtualMachinePlatform).State) -eq "Enabled"
-    Write-Host "Does the system have Virtual Machine Platform enabled?: ${isVirtualMachineEnabled}"
+    Write-Host "System has Virtual Machine Platform enabled?: ${isVirtualMachineEnabled}"
     Set-Item -Path Env:SINDAGAL_INIT_VMP -Value ($isVirtualMachineEnabled)
 }
 
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
+# Tested ✓
 function Set-AddonState {
     if(!(Test-Elevation)){
-    	throw "This requires admin privileges"
+    	throw "This requires admin privileges!"
     }
+    Write-Host "Setting initial addon state..."
+
     $isChocoInstalled = Test-Chocolatey
+    Write-Host "System has chocolatey installed?: ${isChocoInstalled}" 
+
     $isWindowsTerminalInstalled = Test-WindowsTerminal
+    Write-Host "System has windows terminal installed?: ${isWindowsTerminalInstalled}" 
+
     $isOhMyPoshInstalled =  Test-OhMyPosh
+    Write-Host "Terminal has oh-my-posh polyfill?: ${isOhMyPoshInstalled}"
+
     $isPoshGitInstalled =  Test-PoshGit
+    Write-Host "Terminal has posh-git polyfill?: ${isPoshGitInstalled}"
+
     $isCascadiaCodeInstalled = Test-Glyphs
+    Write-Host "Terminal has Cascadia Code Nerd Font glyphs installed?: ${isCascadiaCodeInstalled}"
 
     Set-Item -Path Env:SINDAGAL_INIT_CHOCO -Value ($isChocoInstalled)
     Set-Item -Path Env:SINDAGAL_INIT_WTER -Value ($isWindowsTerminalInstalled)
@@ -60,7 +73,7 @@ function Set-AddonState {
 }
 
 #############################################################################################################################################
-
+# Tested ✓
 function Test-WindowsTerminal {
     [OutputType([boolean])]
 
@@ -70,43 +83,49 @@ function Test-WindowsTerminal {
     return $isWindowsTerminalInstalled
 }
 
+# Tested ✓
 function Enable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
      }     
-     if (!(Test-Choco)){
+     if (!(Test-Chocolatey)){
      	throw "This requires chocolatey, please run Enable-Chocolatey function first"
      }
      
      Write-Host "Installing Microsoft Terminal through Chocolatey" -ForegroundColor White -BackgroundColor Black
      choco install microsoft-windows-terminal -y --pre 
     
-     $wtSettingsURL = "https://raw.githubusercontent.com/denzii/sindagal/master/settings.json"
+     #TODO: Move settings backup to a separate function so it can be executed after wsl setup
+     #$wtSettingsURL = "https://raw.githubusercontent.com/denzii/sindagal/master/settings.json"
 
-     Write-Host "Replacing Windows Terminal settings with pre-configured settings downloaded from github" -ForegroundColor White -BackgroundColor Black
-     Write-Host "${wtSettingsURL}"  -ForegroundColor White -BackgroundColor Black
+     #Write-Host "Replacing Windows Terminal settings with pre-configured settings downloaded from github" -ForegroundColor White -BackgroundColor Black
+     #Write-Host "${wtSettingsURL}"  -ForegroundColor White -BackgroundColor Black
 
-    $windowsTerminalConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
-    $windowsTerminalBackupConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings-backup.json"
+    #$windowsTerminalConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
+    #$windowsTerminalBackupConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings-backup.json"
     
-    if (!(Test-Path -Path $windowsTerminalBackupConfigPath -PathType Leaf)){
-	Write-Host "Backing up windows terminal settings" -ForegroundColor White -BackgroundColor Black
-        Rename-Item -LiteralPath $windowsTerminalConfigPath -NewName "settings-backup.json"
-    }
+    #if (!(Test-Path -Path $windowsTerminalBackupConfigPath -PathType Leaf)){
+	#Write-Host "Backing up windows terminal settings" -ForegroundColor White -BackgroundColor Black
+        #Rename-Item -LiteralPath $windowsTerminalConfigPath -NewName "settings-backup.json"
+    #}
 
-    Invoke-WebRequest -uri  "https://raw.githubusercontent.com/denzii/sindagal/master/settings.json" -Method "GET" -Outfile $windowsTerminalConfigPath
+    #Invoke-WebRequest -uri  "https://raw.githubusercontent.com/denzii/sindagal/master/settings.json" -Method "GET" -Outfile $windowsTerminalConfigPath
 }
 
 function Disable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
      }     
-     if (!(Test-Choco)){
+     if (!(Test-Chocolatey)) {
      	throw "This requires chocolatey, please run Enable-Choco function first"
      }
      Write-Host "Removing Microsoft Windows Terminal Executable through Chocolatey" -ForegroundColor White -BackgroundColor Black
-
-     choco uninstall microsoft-windows-terminal -y --pre 
+     
+     choco uninstall microsoft-windows-terminal -y --pre --force
+     
+     # remove leftover appx package manually (for some reason choco is not reliably removing it)
+     $windowsTerminalFullName = (Get-AppxPackage | Where-Object Name -eq "Microsoft.WindowsTerminalPreview").PackageFullName
+     Remove-AppxPackage -Package $windowsTerminalFullName
 }
 
 function Restore-WindowsTerminal {
@@ -145,7 +164,7 @@ function Enable-Chocolatey {
 
     Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))    
 
-   if (!Test-Chocolatey) {
+   if (!(Test-Chocolatey)) {
        Write-Host "For some reason chocolatey was not installed " -ForegroundColor Red -BackgroundColor Black
        Write-Host "Bye~~" -ForegroundColor Red -BackgroundColor Black
    }
