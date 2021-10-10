@@ -1,17 +1,20 @@
 
 
 function Test-Elevation {
-    $Elevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-    if ( -not $Elevated ) {
-      throw "This module requires elevation."
-    }
+    [OutputType([boolean])]
+    $elevated = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+    
+    return (-not $elevated)
 }
 
 #############################################################################################################################################
 # Set Environment Variables For Initial Host System State
 # Tested ✓
 function Set-EnvState {
-    Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }
+    
     $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1]
     Write-Host "System has x${osArchitectureBits} bits" 
     Set-Item -Path Env:SINDAGAL_OS_BITS -Value ($osArchitectureBits)
@@ -25,7 +28,7 @@ function Set-EnvState {
     Set-Item -Path Env:SINDAGAL_OS_BUILD -Value ($osBuild)
 
     $osVersion = [int](Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ReleaseId 
-    Write-Host "OS version is ${osBuild}" 
+    Write-Host "OS version is ${osVersion}" 
     Set-Item -Path Env:SINDAGAL_OS_VER -Value ($osVersion)
 
     $isWslEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq Microsoft-Windows-Subsystem-Linux).State) -eq "Enabled"
@@ -40,7 +43,9 @@ function Set-EnvState {
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
 function Set-AddonState {
-    Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges"
+    }
     $isChocoInstalled = Test-Chocolatey
     $isWindowsTerminalInstalled = Test-WindowsTerminal
     $isOhMyPoshInstalled =  Test-OhMyPosh
@@ -66,20 +71,26 @@ function Test-WindowsTerminal {
 }
 
 function Enable-WindowsTerminal {
-     Test-Elevation
-	Write-Host "Installing Microsoft Terminal through Chocolatey" -ForegroundColor White -BackgroundColor Black
-	choco install microsoft-windows-terminal -y --pre 
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }     
+     if (!(Test-Choco)){
+     	throw "This requires chocolatey, please run Enable-Chocolatey function first"
+     }
+     
+     Write-Host "Installing Microsoft Terminal through Chocolatey" -ForegroundColor White -BackgroundColor Black
+     choco install microsoft-windows-terminal -y --pre 
     
-	$wtSettingsURL = "https://raw.githubusercontent.com/denzii/sindagal/master/settings.json"
+     $wtSettingsURL = "https://raw.githubusercontent.com/denzii/sindagal/master/settings.json"
 
-	Write-Host "Replacing Windows Terminal settings with pre-configured settings downloaded from github" -ForegroundColor White -BackgroundColor Black
-	Write-Host "${wtSettingsURL}"  -ForegroundColor White -BackgroundColor Black
+     Write-Host "Replacing Windows Terminal settings with pre-configured settings downloaded from github" -ForegroundColor White -BackgroundColor Black
+     Write-Host "${wtSettingsURL}"  -ForegroundColor White -BackgroundColor Black
 
     $windowsTerminalConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
     $windowsTerminalBackupConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings-backup.json"
     
     if (!(Test-Path -Path $windowsTerminalBackupConfigPath -PathType Leaf)){
-		Write-Host "Backing up windows terminal settings" -ForegroundColor White -BackgroundColor Black
+	Write-Host "Backing up windows terminal settings" -ForegroundColor White -BackgroundColor Black
         Rename-Item -LiteralPath $windowsTerminalConfigPath -NewName "settings-backup.json"
     }
 
@@ -87,14 +98,21 @@ function Enable-WindowsTerminal {
 }
 
 function Disable-WindowsTerminal {
-  Test-Elevation
-    Write-Host "Removing Microsoft Windows Terminal Executable through Chocolatey" -ForegroundColor White -BackgroundColor Black
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }     
+     if (!(Test-Choco)){
+     	throw "This requires chocolatey, please run Enable-Choco function first"
+     }
+     Write-Host "Removing Microsoft Windows Terminal Executable through Chocolatey" -ForegroundColor White -BackgroundColor Black
 
-	choco uninstall microsoft-windows-terminal -y --pre 
+     choco uninstall microsoft-windows-terminal -y --pre 
 }
 
 function Restore-WindowsTerminal {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }     
     Write-Host "Restoring Microsoft Windows Terminal to its initial state" -ForegroundColor White -BackgroundColor Black
 
     $windowsTerminalConfigPath = "$env:USERPROFILE\AppData\Local\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json"
@@ -115,7 +133,10 @@ function Test-Chocolatey {
 }
 
 function Enable-Chocolatey {    
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }     
+     
     $InstallDir='C:\ProgramData\chocoportable'
     $env:ChocolateyInstall="$InstallDir"
         
@@ -144,9 +165,11 @@ function Test-OhMyPosh {
 }
 
 function Enable-OhMyPosh {
- Test-Elevation
-    Write-Host "Installing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
-	Install-Module oh-my-posh -Force -Scope CurrentUser
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }   
+     Write-Host "Installing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
+     Install-Module oh-my-posh -Force -Scope CurrentUser
 }
 
 function Disable-OhMyPosh {
@@ -166,13 +189,17 @@ function Test-PoshGit {
 }
 
 function Enable-PoshGit {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }   
     Write-Host "Installing posh git powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
     Install-Module posh-git -Force -Scope CurrentUser
 }
 
 function Disable-PoshGit {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }   
     Write-Host "Removing posh git powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
     Get-InstalledModule -Name posh-git | Uninstall-Module 
 }
@@ -190,9 +217,11 @@ function Test-Glyphs {
 }
 
 function Add-Glyphs {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
     $cascadiaCodeURL = "https://github.com/AaronFriel/nerd-fonts/releases/download/v1.2.0/CascadiaCode.Nerd.Font.Complete.ttf"
-	$cascadiaDestinationPath = ".\cascadia-code"
+    $cascadiaDestinationPath = ".\cascadia-code"
 
 	If(!(test-path $cascadiaDestinationPath)){
 		New-Item -Path $cascadiaDestinationPath -ItemType "directory"
@@ -215,7 +244,9 @@ function Add-Glyphs {
 }
 
 function Remove-Glyphs {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
     $cascadiaDestinationPath = ".\cascadia-code"
     Write-Host "Iterating over ${cascadiaDestinationPath} folder contents to delete each font from the Host" -ForegroundColor White -BackgroundColor Black
     $files = Get-ChildItem "${cascadiaDestinationPath}"
@@ -238,7 +269,7 @@ function Test-WSL2Support {
     $armRequiredOsBuild = [int]19041 
    
     if ($null -eq $env:SINDAGAL_OS_BITS){
-        throw "Please run the Set-EnvState function first."
+        throw "This requires the initial environment state to be set, please run the Set-EnvState function first."
     }
 
     $amdWsl2EligibilityCriteria = $env:SINDAGAL_OS_VER -ge $amdRequiredOsVersion -and $env:SINDAGAL_OS_BUILD -ge $amdRequiredOsBuild
@@ -264,7 +295,9 @@ function Test-WSL {
 }
 
 function Enable-WSL {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
     try {
         Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
@@ -289,7 +322,10 @@ function Enable-WSL {
 }
 
 function Disable-WSL {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
+    
     try {
         Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
@@ -311,13 +347,17 @@ function Disable-WSL {
 }
 
 function New-Distro {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
     Invoke-WebRequest -Uri https://aka.ms/wsl-debian-gnulinux -OutFile .\Debian.appx -UseBasicParsing
     Add-AppxPackage .\Debian.appx
 }
 
 function Remove-Distro {
- Test-Elevation
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
     wsl.exe --unregister Debian
     Remove-AppxPackage .\Debian.appx
 }
@@ -338,7 +378,11 @@ function Install-Font {
     (  
          [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][System.IO.FileInfo]$FontFile  
     ) 
-
+    
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
+    
     #Get Font Name from the File's Extended Attributes
     $oShell = new-object -com shell.application
     $Folder = $oShell.namespace($FontFile.DirectoryName)
@@ -408,6 +452,10 @@ function Remove-Font {
          [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$FontFile  
     ) 
 
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+    }   
+    
      #Get Font Name from the File's Extended Attributes
      $oShell = new-object -com shell.application
      $Folder = $oShell.namespace($FontFile.DirectoryName)
