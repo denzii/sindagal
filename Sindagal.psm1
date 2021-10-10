@@ -269,6 +269,7 @@ function Test-Glyphs{
     return $isCascadiaCodeInstalled
 }
 
+# Tested ✓
 function Add-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -302,6 +303,7 @@ function Add-Glyphs {
     #}
 }
 
+# Tested ✓
 function Remove-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -315,6 +317,8 @@ function Remove-Glyphs {
             $FontFile = [System.IO.FileInfo]$f
             Remove-Font -FontFile $FontFile
         }
+	Write-Host "Restarting Powershell session for changes to take effect..." -ForegroundColor White -BackgroundColor Black
+	Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
     }
 }
 #############################################################################################################################################
@@ -434,6 +438,7 @@ function Register-DistroAddons {
 # Install-Font Function Author: Mick Pletcher
 # Published: Tuesday, June 29, 2021
 # Source: https://mickitblog.blogspot.com/2021/06/powershell-install-fonts.html
+# Tested ✓
 function Install-Font {
     param  
     (  
@@ -507,6 +512,7 @@ function Install-Font {
     } 
 }
 
+# Tested ✓
 function Remove-Font {
     param  
     (  
@@ -527,22 +533,19 @@ function Remove-Font {
             ".ttf" { $FontName = $FontName + [char]32 + '(TrueType)' }
             ".otf" { $FontName = $FontName + [char]32 + '(OpenType)' }
         }
+ 	$fontRegistryKeyExists = $null -ne (Get-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -ErrorAction SilentlyContinue)
+         If ($fontRegistryKeyExists) {
+            Write-Host ('Removing key for ' + $FontName + ' from the registry.....') -NoNewline  -ForegroundColor White
+            Remove-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -Force           
+         } 
+
         Write-Host ('Deleting' + $FontFile.Name + '.....') -NoNewline
         Remove-Item ("C:\Windows\Fonts\" + $FontFile.Name) -Force
          
         $fontIsDeleted = (Test-Path ("C:\Windows\Fonts\" + $FontFile.Name)) -eq $false
         If ($fontIsDeleted) { Write-Host ('Success') -Foreground Yellow }
         else {  Write-Host ('Failed') -ForegroundColor Red }
-
-         $fontRegistryKeyExists = $null -ne (Get-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -ErrorAction SilentlyContinue)
-         If ($fontRegistryKeyExists) {
-            Write-Host ('Removing key for' + $FontName + 'from the registry.....') -NoNewline  -ForegroundColor White
-            Remove-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -Force
-
-            $registryKeyIsDeleted = !(Get-ItemPropertyValue -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $FontFile.Name 
-            If ($registryKeyIsDeleted) {  Write-Host ('Success') -ForegroundColor Yellow }
-            else {  Write-Host ('Failed') -ForegroundColor Red }             
-         } 
+        
      } catch {
         Write-Host ('Failed') -ForegroundColor Red
         write-warning $_.exception.message
