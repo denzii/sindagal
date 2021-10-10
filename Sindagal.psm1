@@ -112,6 +112,8 @@ function Enable-WindowsTerminal {
     #Invoke-WebRequest -uri  "https://raw.githubusercontent.com/denzii/sindagal/master/settings.json" -Method "GET" -Outfile $windowsTerminalConfigPath
 }
 
+
+# Tested ✓
 function Disable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -142,6 +144,7 @@ function Restore-WindowsTerminal {
 
 #############################################################################################################################################
 
+# Tested ✓
 function Test-Chocolatey {
     [OutputType([boolean])]
 
@@ -151,6 +154,7 @@ function Test-Chocolatey {
     return $isChocoInstalled
 }
 
+# Tested ✓
 function Enable-Chocolatey {    
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -170,6 +174,20 @@ function Enable-Chocolatey {
    }
 
    choco upgrade chocolatey -y
+}
+
+# Tested ✓
+function Disable-Chocolatey {
+    if(!(Test-Elevation)){
+    	throw "This requires admin privileges, please run it through an elevated powershell prompt"
+     }
+     Write-Host "Uninstalling Chocolatey" -ForegroundColor White -BackgroundColor Black
+     $InstallDir='C:\ProgramData\chocoportable'
+     
+     Get-ChildItem -Path $InstallDir -Recurse | Remove-Item -force -recurse
+     Remove-Item $InstallDir -Recurse -Force 
+     
+     $env:ChocolateyInstall=$null
 }
 
 #############################################################################################################################################
@@ -517,6 +535,7 @@ Export-ModuleMember -function `
     Format-WindowsTerminal,`
     Test-Chocolatey,`
     Enable-Chocolatey,`
+    Disable-Chocolatey,`
     Test-OhMyPosh,`
     Enable-OhMyPosh,`
     Disable-OhMyPosh,`
