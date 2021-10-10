@@ -18,27 +18,27 @@ function Set-EnvState {
     
     $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1]
     Write-Host "System has x${osArchitectureBits} bits" 
-    Set-Item -Path Env:SINDAGAL_OS_BITS -Value ($osArchitectureBits)
+    Set-Item -Path Env:SINDAGAL_OS_BITS -Value($osArchitectureBits)
 
     $osArchitecture = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[0] 
     Write-Host "System has ${osArchitecture} processor"
-    Set-Item -Path Env:SINDAGAL_OS_ARCHITECTURE -Value ($osArchitecture)
+    Set-Item -Path Env:SINDAGAL_OS_ARCHITECTURE -Value($osArchitecture)
 
     $osBuild = [int]((wmic os get BuildNumber) -split  '(?=\d)',2)[3]
     Write-Host "OS build is ${osBuild}" 
-    Set-Item -Path Env:SINDAGAL_OS_BUILD -Value ($osBuild)
+    Set-Item -Path Env:SINDAGAL_OS_BUILD -Value($osBuild)
 
     $osVersion = [int](Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ReleaseId 
     Write-Host "OS version is ${osVersion}" 
-    Set-Item -Path Env:SINDAGAL_OS_VER -Value ($osVersion)
+    Set-Item -Path Env:SINDAGAL_OS_VER -Value($osVersion)
 
     $isWslEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq Microsoft-Windows-Subsystem-Linux).State) -eq "Enabled"
     Write-Host "System has WSL enabled?: ${isWslEnabled}"
-    Set-Item -Path Env:SINDAGAL_INIT_WSL -Value ($isWslEnabled)
+    Set-Item -Path Env:SINDAGAL_INIT_WSL -Value($isWslEnabled)
     
     $isVirtualMachineEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq VirtualMachinePlatform).State) -eq "Enabled"
     Write-Host "System has Virtual Machine Platform enabled?: ${isVirtualMachineEnabled}"
-    Set-Item -Path Env:SINDAGAL_INIT_VMP -Value ($isVirtualMachineEnabled)
+    Set-Item -Path Env:SINDAGAL_INIT_VMP -Value($isVirtualMachineEnabled)
 }
 
 #############################################################################################################################################
@@ -56,20 +56,20 @@ function Set-AddonState {
     $isWindowsTerminalInstalled = Test-WindowsTerminal
     Write-Host "System has windows terminal installed?: ${isWindowsTerminalInstalled}" 
 
-    $isOhMyPoshInstalled =  Test-OhMyPosh
+    $isOhMyPoshInstalled = Test-OhMyPosh
     Write-Host "Terminal has oh-my-posh polyfill?: ${isOhMyPoshInstalled}"
 
-    $isPoshGitInstalled =  Test-PoshGit
+    $isPoshGitInstalled = Test-PoshGit
     Write-Host "Terminal has posh-git polyfill?: ${isPoshGitInstalled}"
 
     $isCascadiaCodeInstalled = Test-Glyphs
     Write-Host "Terminal has Cascadia Code Nerd Font glyphs installed?: ${isCascadiaCodeInstalled}"
 
-    Set-Item -Path Env:SINDAGAL_INIT_CHOCO -Value ($isChocoInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_WTER -Value ($isWindowsTerminalInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_OMP -Value ($isOhMyPoshInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_PG -Value ($isPoshGitInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_CCNF -Value ($isCascadiaCodeInstalled)
+    Set-Item -Path Env:SINDAGAL_INIT_CHOCO -Value($isChocoInstalled)
+    Set-Item -Path Env:SINDAGAL_INIT_WTER -Value($isWindowsTerminalInstalled)
+    Set-Item -Path Env:SINDAGAL_INIT_OMP -Value($isOhMyPoshInstalled)
+    Set-Item -Path Env:SINDAGAL_INIT_PG -Value($isPoshGitInstalled)
+    Set-Item -Path Env:SINDAGAL_INIT_CCNF -Value($isCascadiaCodeInstalled)
 }
 
 #############################################################################################################################################
@@ -259,14 +259,14 @@ function Disable-PoshGit {
 
 #############################################################################################################################################
 
-function Test-Glyphs {
-    [OutputType([boolean])]
-
-    $fontQueryOutput = [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null ;`
-    [string]((New-Object System.Drawing.Text.InstalledFontCollection).Families | Where-Object Name -eq "CascadiaCode Nerd Font")
-    $isCascadiaCodeInstalled = !([string]::IsNullOrEmpty($fontQueryOutput))
-
-    return $isCascadiaCodeInstalled;
+# Tested ✓
+function Test-Glyphs{
+    # For some reason return type annotation does not work if importing library?
+    [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null 
+    $fontQueryOutput = ([string]((New-Object System.Drawing.Text.InstalledFontCollection).Families | Where-Object Name -eq "CascadiaCode Nerd Font"))
+    $isCascadiaCodeInstalled = (![string]::IsNullOrEmpty($fontQueryOutput))
+    
+    return $isCascadiaCodeInstalled
 }
 
 function Add-Glyphs {
@@ -274,10 +274,10 @@ function Add-Glyphs {
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
     }
     
-    if(!(Test-Glyphs)){   
+    #if(!(Test-Glyphs)){   
     	$cascadiaCodeURL = "https://github.com/AaronFriel/nerd-fonts/releases/download/v1.2.0/CascadiaCode.Nerd.Font.Complete.ttf"
-    	$cascadiaDestinationPath = ".\cascadia-code"
-
+    	
+	$cascadiaDestinationPath = "C:\ProgramData\Sindagal\cascadia-code"
 	If(!(test-path $cascadiaDestinationPath)){
        	    New-Item -Path $cascadiaDestinationPath -ItemType "directory"
 	}
@@ -296,7 +296,10 @@ function Add-Glyphs {
             $FontFile = [System.IO.FileInfo]$f
             Install-Font -FontFile $FontFile
         }
-    }
+
+	Write-Host "Restarting Powershell session for changes to take effect..." -ForegroundColor White -BackgroundColor Black
+	Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
+    #}
 }
 
 function Remove-Glyphs {
@@ -304,10 +307,10 @@ function Remove-Glyphs {
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
     } 
     if(Test-Glyphs){  
-        $cascadiaDestinationPath = ".\cascadia-code"
+	$cascadiaDestinationPath = "C:\ProgramData\Sindagal\cascadia-code"
         Write-Host "Iterating over ${cascadiaDestinationPath} folder contents to delete each font from the Host" -ForegroundColor White -BackgroundColor Black
         $files = Get-ChildItem "${cascadiaDestinationPath}"
-
+	
         foreach ($f in $files){
             $FontFile = [System.IO.FileInfo]$f
             Remove-Font -FontFile $FontFile
@@ -452,7 +455,7 @@ function Install-Font {
             ".otf" {$FontName = $FontName + [char]32 + '(OpenType)'}
         }
         $Copy = $true
-        Write-Host ('Copying' + [char]32 + $FontFile.Name + '.....') -NoNewline
+        Write-Host ('Copying' + $FontFile.Name + '.....') -NoNewline
         Copy-Item -Path $fontFile.FullName -Destination ("C:\Windows\Fonts\" + $FontFile.Name) -Force
         #Test if font is copied over
         If ((Test-Path("C:\Windows\Fonts\" + $FontFile.Name)) -eq $true) {
@@ -465,12 +468,12 @@ function Install-Font {
         If ($null -ne (Get-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -ErrorAction SilentlyContinue)) {
              #Test if the entry matches the font file name
             If ((Get-ItemPropertyValue -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $FontFile.Name) {
-                Write-Host 'Adding' + [char]32 + $FontName + [char]32 + 'to the registry.....' -NoNewline  -ForegroundColor White 
+                Write-Host 'Adding' +  $FontName + 'to the registry.....' -NoNewline  -ForegroundColor White 
                 Write-Host 'Success' -ForegroundColor Yellow
             } else {
                 $AddKey = $true
                 Remove-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -Force
-                Write-Host 'Adding' + [char]32 + $FontName + [char]32 + 'to the registry.....' -NoNewline  -ForegroundColor White
+                Write-Host 'Adding' + $FontName + 'to the registry.....' -NoNewline  -ForegroundColor White
                 New-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -PropertyType string -Value $FontFile.Name -Force -ErrorAction SilentlyContinue | Out-Null
                 
                 If ((Get-ItemPropertyValue -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $FontFile.Name) {
@@ -482,7 +485,7 @@ function Install-Font {
             }
         } else {
             $AddKey = $true
-            Write-Host 'Adding' + [char]32 + $FontName + [char]32 + 'to the registry.....' -NoNewline  -ForegroundColor White
+            Write-Host 'Adding' + $FontName + 'to the registry.....' -NoNewline  -ForegroundColor White
             New-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -PropertyType string -Value $FontFile.Name -Force -ErrorAction SilentlyContinue | Out-Null
             If ((Get-ItemPropertyValue -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $FontFile.Name) {
                 Write-Host 'Success' -ForegroundColor Yellow
@@ -507,7 +510,7 @@ function Install-Font {
 function Remove-Font {
     param  
     (  
-         [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][string]$FontFile  
+         [Parameter(Mandatory = $true)][ValidateNotNullOrEmpty()][System.IO.FileInfo]$FontFile  
     ) 
 
     if(!(Test-Elevation)){
@@ -524,7 +527,7 @@ function Remove-Font {
             ".ttf" { $FontName = $FontName + [char]32 + '(TrueType)' }
             ".otf" { $FontName = $FontName + [char]32 + '(OpenType)' }
         }
-        Write-Host ('Deleting' + [char]32 + $FontFile.Name + '.....') -NoNewline
+        Write-Host ('Deleting' + $FontFile.Name + '.....') -NoNewline
         Remove-Item ("C:\Windows\Fonts\" + $FontFile.Name) -Force
          
         $fontIsDeleted = (Test-Path ("C:\Windows\Fonts\" + $FontFile.Name)) -eq $false
@@ -533,7 +536,7 @@ function Remove-Font {
 
          $fontRegistryKeyExists = $null -ne (Get-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -ErrorAction SilentlyContinue)
          If ($fontRegistryKeyExists) {
-            Write-Host ('Removing key for' + [char]32 + $FontName + [char]32 + 'from the registry.....') -NoNewline  -ForegroundColor White
+            Write-Host ('Removing key for' + $FontName + 'from the registry.....') -NoNewline  -ForegroundColor White
             Remove-ItemProperty -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts" -Force
 
             $registryKeyIsDeleted = !(Get-ItemPropertyValue -Name $FontName -Path "HKLM:\Software\Microsoft\Windows NT\CurrentVersion\Fonts") -eq $FontFile.Name 
