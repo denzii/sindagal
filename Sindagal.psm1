@@ -39,6 +39,7 @@ function Set-EnvState {
     $isVirtualMachineEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq VirtualMachinePlatform).State) -eq "Enabled"
     Write-Host "System has Virtual Machine Platform enabled?: ${isVirtualMachineEnabled}"
     Set-Item -Path Env:SINDAGAL_INIT_VMP -Value($isVirtualMachineEnabled)
+    Set-Item -Path Env:SINDAGAL_CONFIGURED -Value($true)
 }
 
 #############################################################################################################################################
@@ -362,10 +363,13 @@ function Test-WSL {
 function Enable-WSL {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
-    }   
+    }
+    if(!($env:SINDAGAL_CONFIGURED)){
+        throw "This requires setting the env, please run Set-EnvState first"
+    }
     try {
 	Write-Host "Enabling WSL..." -ForegroundColor White -BackgroundColor Black
-        ECHO Y | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
+        ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
         if (Test-WSL2Support){
 	    Write-Host "Host Supports WSL2..." -ForegroundColor White -BackgroundColor Black
