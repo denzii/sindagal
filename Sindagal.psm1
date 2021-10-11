@@ -364,10 +364,13 @@ function Enable-WSL {
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
     }   
     try {
-        Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
+	Write-Host "Enabling WSL..." -ForegroundColor White -BackgroundColor Black
+        ECHO Y | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
         if (Test-WSL2Support){
-            Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+	    Write-Host "Host Supports WSL2..." -ForegroundColor White -BackgroundColor Black
+	    Write-Host "Enabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black
+            ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
             
             $installFile = ".\wsl_update_x64.msi"
             Invoke-WebRequest -uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -Method "GET"  -OutFile $installFile 
@@ -375,9 +378,11 @@ function Enable-WSL {
             $kernelUpdateFullPath = Resolve-Path $installFile
             
             # silent install
+	    Write-Host "Silently running the WSL2 Kernel Update" -ForegroundColor White -BackgroundColor Black
             $installerParams = @("/qn", "/i", $kernelUpdateFullPath)
             Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
         }
+    Write-Host "WSL has been enabled, please restart for the changes to take effect..." -ForegroundColor White -BackgroundColor Black
     }
     catch {
         Write-Host 'Failed' -ForegroundColor Red
