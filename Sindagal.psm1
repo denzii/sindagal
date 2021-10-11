@@ -360,6 +360,7 @@ function Test-WSL {
     return $isWslInstalled
 }
 
+
 function Enable-WSL {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -367,6 +368,7 @@ function Enable-WSL {
     if(!($env:SINDAGAL_CONFIGURED)){
         throw "This requires setting the env, please run Set-EnvState first"
     }
+
     try {
 	Write-Host "Enabling WSL..." -ForegroundColor White -BackgroundColor Black
         ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
@@ -386,37 +388,44 @@ function Enable-WSL {
             $installerParams = @("/qn", "/i", $kernelUpdateFullPath)
             Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
         }
+    Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
     Write-Host "WSL has been enabled, please restart for the changes to take effect..." -ForegroundColor White -BackgroundColor Black
     }
     catch {
         Write-Host 'Failed' -ForegroundColor Red
         write-warning $_.exception.message
     }
-
+    
 }
 
 function Disable-WSL {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
     }   
-    
-    try {
-        Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
+    if(Test-WSL){
+        try {
+            Write-Host "Disabling WSL..." -ForegroundColor White -BackgroundColor Black
+            Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
-        if (Test-WSL2Support){
-            Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+            if (Test-WSL2Support){
+    		Write-Host "Disabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black                
+		Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+             
+                $installFile = ".\wsl_update_x64.msi"            
+                $kernelUpdateFullPath = Resolve-Path $installFile
             
-            $installFile = ".\wsl_update_x64.msi"            
-            $kernelUpdateFullPath = Resolve-Path $installFile
-            
-            # silent uninstall
-            $installerParams = @("/qn", "/x", $kernelUpdateFullPath)
-            Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
+                # silent uninstall
+		Write-Host "Downgrading from WSL2 Kernel Patch..." -ForegroundColor White -BackgroundColor Black                
+                $installerParams = @("/qn", "/x", $kernelUpdateFullPath)
+                Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
+            }
         }
-    }
-    catch {
-        Write-Host 'Failed' -ForegroundColor Red
-        write-warning $_.exception.message
+        catch {
+            Write-Host 'Failed' -ForegroundColor Red
+            write-warning $_.exception.message
+        }
+    Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
+    Write-Host "WSL has been disabled, please restart for the changes to take effect..." -ForegroundColor White -BackgroundColor Black
     }
 }
 
