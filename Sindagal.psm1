@@ -405,11 +405,11 @@ function Disable-WSL {
     if(Test-WSL){
         try {
             Write-Host "Disabling WSL..." -ForegroundColor White -BackgroundColor Black
-            Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
+            Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 
             if (Test-WSL2Support){
     		Write-Host "Disabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black                
-		Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+		Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
              
                 $installFile = ".\wsl_update_x64.msi"            
                 $kernelUpdateFullPath = Resolve-Path $installFile
