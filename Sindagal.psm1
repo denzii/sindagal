@@ -353,11 +353,12 @@ function Test-WSL2Support {
 
 function Test-WSL {
     [OutputType([boolean])]
-
-    $wslCommandOutput = [string](Get-Command -Name wsl.exe -ErrorAction SilentlyContinue)
-    $isWslInstalled = !([string]::IsNullOrEmpty($wslCommandOutput))
-
-    return $isWslInstalled
+     #below does not work because system32 always has wsl.exe after first installation no matter what
+    #$wslCommandOutput = [string](Get-Command -Name wsl.exe -ErrorAction SilentlyContinue)
+    #$isWslInstalled = !([string]::IsNullOrEmpty($wslCommandOutput))
+    #return $isWslInstalled
+    
+    return (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux).State -eq "Enabled" 
 }
 
 
@@ -368,7 +369,7 @@ function Enable-WSL {
     if(!($env:SINDAGAL_CONFIGURED)){
         throw "This requires setting the env, please run Set-EnvState first"
     }
-    if(!(Test-WSL)){
+    #if(!(Test-WSL)){
     	try {
 			Write-Host "Enabling WSL..." -ForegroundColor White -BackgroundColor Black
       	    ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
@@ -377,8 +378,11 @@ function Enable-WSL {
 	    		Write-Host "Host Supports WSL2..." -ForegroundColor White -BackgroundColor Black
 	   			Write-Host "Enabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black
             	ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
-            
-            	$installFile = ".\wsl_update_x64.msi"
+                $installFolder = "C:\ProgramData\Sindagal\i" 
+                $installFile = "C:\ProgramData\Sindagal\wsl_update_x64.msi"   
+		If(!(test-path $installFolder)){
+       	    		New-Item -Path $installFolder -ItemType "directory"
+		} 
             	Invoke-WebRequest -uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -Method "GET"  -OutFile $installFile 
             
             	$kernelUpdateFullPath = Resolve-Path $installFile
@@ -395,7 +399,7 @@ function Enable-WSL {
         	Write-Host 'Failed' -ForegroundColor Red
         	write-warning $_.exception.message
     	}
-    }
+    #}
 }
 
 function Disable-WSL {
@@ -411,7 +415,7 @@ function Disable-WSL {
     		Write-Host "Disabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black                
 		Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
              
-                $installFile = ".\wsl_update_x64.msi"            
+                $installFile = "C:\ProgramData\Sindagal\wsl_update_x64.msi"            
                 $kernelUpdateFullPath = Resolve-Path $installFile
             
                 # silent uninstall
