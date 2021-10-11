@@ -368,34 +368,34 @@ function Enable-WSL {
     if(!($env:SINDAGAL_CONFIGURED)){
         throw "This requires setting the env, please run Set-EnvState first"
     }
+    if(!(Test-WSL)){
+    	try {
+			Write-Host "Enabling WSL..." -ForegroundColor White -BackgroundColor Black
+      	    ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
 
-    try {
-	Write-Host "Enabling WSL..." -ForegroundColor White -BackgroundColor Black
-        ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
-
-        if (Test-WSL2Support){
-	    Write-Host "Host Supports WSL2..." -ForegroundColor White -BackgroundColor Black
-	    Write-Host "Enabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black
-            ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+        	if (Test-WSL2Support){
+	    		Write-Host "Host Supports WSL2..." -ForegroundColor White -BackgroundColor Black
+	   			Write-Host "Enabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black
+            	ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
             
-            $installFile = ".\wsl_update_x64.msi"
-            Invoke-WebRequest -uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -Method "GET"  -OutFile $installFile 
+            	$installFile = ".\wsl_update_x64.msi"
+            	Invoke-WebRequest -uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -Method "GET"  -OutFile $installFile 
             
-            $kernelUpdateFullPath = Resolve-Path $installFile
+            	$kernelUpdateFullPath = Resolve-Path $installFile
             
-            # silent install
-	    Write-Host "Silently running the WSL2 Kernel Update" -ForegroundColor White -BackgroundColor Black
-            $installerParams = @("/qn", "/i", $kernelUpdateFullPath)
-            Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
-        }
-    Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
-    Write-Host "WSL has been enabled, please restart for the changes to take effect..." -ForegroundColor White -BackgroundColor Black
+            	# silent install
+	    		Write-Host "Silently running the WSL2 Kernel Update" -ForegroundColor White -BackgroundColor Black
+            	$installerParams = @("/qn", "/i", $kernelUpdateFullPath)
+            	Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
+        	}
+    	Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
+    	Write-Host "WSL has been enabled, please restart for the changes to take effect..." -ForegroundColor White -BackgroundColor Black
+    	}
+    	catch {
+        	Write-Host 'Failed' -ForegroundColor Red
+        	write-warning $_.exception.message
+    	}
     }
-    catch {
-        Write-Host 'Failed' -ForegroundColor Red
-        write-warning $_.exception.message
-    }
-    
 }
 
 function Disable-WSL {
