@@ -605,6 +605,7 @@ Export-ModuleMember -function `
     Test-Glyphs,`
     Add-Glyphs,`
     Remove-Glyphs,`
+    Test-WSL2Support,`
     Test-WSL,`
     Enable-WSL,`
     Disable-WSL,`
@@ -612,6 +613,7 @@ Export-ModuleMember -function `
     Register-DistroAddons,`
     Remove-Distro,`
     Test-Elevation
+
 
 # TODO: Get the windows terminal settings path dynamically without hardcode
 # TODO: Handle the case where windows terminal initially exists (Write/Delete in settings.json rather than replacing completely)
