@@ -9,7 +9,7 @@ function Test-Elevation {
 
 #############################################################################################################################################
 # Set Environment Variables For Initial Host System State
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Set-EnvState {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges! Please run it through an elevated powershell prompt."
@@ -51,7 +51,7 @@ function Set-EnvState {
 
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Set-AddonState {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges!"
@@ -86,7 +86,7 @@ function Set-AddonState {
 }
 
 #############################################################################################################################################
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Test-WindowsTerminal {
     [OutputType([boolean])]
 
@@ -96,7 +96,7 @@ function Test-WindowsTerminal {
     return $isWindowsTerminalInstalled
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Enable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -126,7 +126,7 @@ function Enable-WindowsTerminal {
 }
 
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Disable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -160,7 +160,7 @@ function Restore-WindowsTerminal {
 
 #############################################################################################################################################
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Test-Chocolatey {
     [OutputType([boolean])]
 
@@ -170,7 +170,7 @@ function Test-Chocolatey {
     return $isChocoInstalled
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Enable-Chocolatey {    
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -192,7 +192,7 @@ function Enable-Chocolatey {
    choco upgrade chocolatey -y
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Disable-Chocolatey {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -211,7 +211,7 @@ function Disable-Chocolatey {
 
 #############################################################################################################################################
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Test-OhMyPosh {
     [OutputType([boolean])]
 
@@ -221,7 +221,7 @@ function Test-OhMyPosh {
     return $isOhMyPoshInstalled
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Enable-OhMyPosh {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -230,7 +230,7 @@ function Enable-OhMyPosh {
      ECHO Y | powershell Install-Module oh-my-posh -Force -Scope CurrentUser
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Disable-OhMyPosh {
     if(Test-OhMyPosh){
     	Write-Host "Removing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
@@ -240,7 +240,7 @@ function Disable-OhMyPosh {
 
 #############################################################################################################################################
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Test-PoshGit {
     [OutputType([boolean])]
 
@@ -250,7 +250,7 @@ function Test-PoshGit {
     return $isPoshGitInstalled
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Enable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -259,7 +259,7 @@ function Enable-PoshGit {
      ECHO Y | powershell Install-Module posh-git -Force -Scope CurrentUser
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Disable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -272,7 +272,7 @@ function Disable-PoshGit {
 
 #############################################################################################################################################
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Test-Glyphs{
     # For some reason return type annotation does not work if importing library?
     [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null 
@@ -282,7 +282,7 @@ function Test-Glyphs{
     return $isCascadiaCodeInstalled
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Add-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -316,7 +316,7 @@ function Add-Glyphs {
     #}
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Remove-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -380,7 +380,7 @@ function Enable-WSL {
     if(!($env:SINDAGAL_CONFIGURED)){
         throw "This requires setting the env, please run Set-EnvState first"
     }
-    #if(!(Test-WSL)){
+    if(!(Test-WSL)){
     	try {
 			Write-Host "Enabling WSL..." -ForegroundColor White -BackgroundColor Black
       	    ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -All 
@@ -389,11 +389,12 @@ function Enable-WSL {
 	    		Write-Host "Host Supports WSL2..." -ForegroundColor White -BackgroundColor Black
 	   			Write-Host "Enabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black
             	ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
-                $installFolder = "C:\ProgramData\Sindagal\i" 
+                $installFolder = "C:\ProgramData\Sindagal\" 
                 $installFile = "C:\ProgramData\Sindagal\wsl_update_x64.msi"   
 		If(!(test-path $installFolder)){
        	    		New-Item -Path $installFolder -ItemType "directory"
 		} 
+	    		Write-Host "Downloading WSL2 Kernel Update from official source: https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi" -ForegroundColor White -BackgroundColor Black
             	Invoke-WebRequest -uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -Method "GET"  -OutFile $installFile 
             
             	$kernelUpdateFullPath = Resolve-Path $installFile
@@ -410,7 +411,7 @@ function Enable-WSL {
         	Write-Host 'Failed' -ForegroundColor Red
         	write-warning $_.exception.message
     	}
-    #}
+    }
 }
 
 function Disable-WSL {
@@ -425,13 +426,13 @@ function Disable-WSL {
             if (Test-WSL2Support){
     		Write-Host "Disabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black                
 		Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
-             
-                $installFile = "C:\ProgramData\Sindagal\wsl_update_x64.msi"            
-                $kernelUpdateFullPath = Resolve-Path $installFile
+               
+                $installFolder = "C:\ProgramData\Sindagal\" 
+                $installFile = "C:\ProgramData\Sindagal\wsl_update_x64.msi" 
             
                 # silent uninstall
 		Write-Host "Downgrading from WSL2 Kernel Patch..." -ForegroundColor White -BackgroundColor Black                
-                $installerParams = @("/qn", "/x", $kernelUpdateFullPath)
+                $installerParams = @("/qn", "/x", $installFile)
                 Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
             }
         }
@@ -471,7 +472,7 @@ function Register-DistroAddons {
 # Install-Font Function Author: Mick Pletcher
 # Published: Tuesday, June 29, 2021
 # Source: https://mickitblog.blogspot.com/2021/06/powershell-install-fonts.html
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Install-Font {
     param  
     (  
@@ -545,7 +546,7 @@ function Install-Font {
     } 
 }
 
-# Tested âœ“
+# Tested Ã¢Å“â€œ
 function Remove-Font {
     param  
     (  
@@ -613,7 +614,6 @@ Export-ModuleMember -function `
     Register-DistroAddons,`
     Remove-Distro,`
     Test-Elevation
-
 
 # TODO: Get the windows terminal settings path dynamically without hardcode
 # TODO: Handle the case where windows terminal initially exists (Write/Delete in settings.json rather than replacing completely)
