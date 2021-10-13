@@ -9,7 +9,7 @@ function Test-Elevation {
 
 #############################################################################################################################################
 # Set Environment Variables For Initial Host System State
-# Tested ✓
+# Tested âœ“
 function Set-EnvState {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges! Please run it through an elevated powershell prompt."
@@ -18,33 +18,40 @@ function Set-EnvState {
     
     $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1]
     Write-Host "System has x${osArchitectureBits} bits" 
-    Set-Item -Path Env:SINDAGAL_OS_BITS -Value($osArchitectureBits)
+    #Set-Item -Path Env:SINDAGAL_OS_BITS -Value($osArchitectureBits)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_BITS', $osArchitectureBits)
 
     $osArchitecture = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[0] 
     Write-Host "System has ${osArchitecture} processor"
-    Set-Item -Path Env:SINDAGAL_OS_ARCHITECTURE -Value($osArchitecture)
+    #Set-Item -Path Env:SINDAGAL_OS_ARCHITECTURE -Value($osArchitecture)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_ARCHITECTURE', $osArchitecture)
 
     $osBuild = [int]((wmic os get BuildNumber) -split  '(?=\d)',2)[3]
     Write-Host "OS build is ${osBuild}" 
-    Set-Item -Path Env:SINDAGAL_OS_BUILD -Value($osBuild)
+    #Set-Item -Path Env:SINDAGAL_OS_BUILD -Value($osBuild)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_BUILD', $osBuild)
 
     $osVersion = [int](Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ReleaseId 
     Write-Host "OS version is ${osVersion}" 
-    Set-Item -Path Env:SINDAGAL_OS_VER -Value($osVersion)
+    #Set-Item -Path Env:SINDAGAL_OS_VER -Value($osVersion)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_VER', $osVersion)
 
     $isWslEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq Microsoft-Windows-Subsystem-Linux).State) -eq "Enabled"
     Write-Host "System has WSL enabled?: ${isWslEnabled}"
-    Set-Item -Path Env:SINDAGAL_INIT_WSL -Value($isWslEnabled)
-    
+    #Set-Item -Path Env:SINDAGAL_INIT_WSL -Value($isWslEnabled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_WSL', $isWslEnabled)
+
     $isVirtualMachineEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq VirtualMachinePlatform).State) -eq "Enabled"
     Write-Host "System has Virtual Machine Platform enabled?: ${isVirtualMachineEnabled}"
-    Set-Item -Path Env:SINDAGAL_INIT_VMP -Value($isVirtualMachineEnabled)
-    Set-Item -Path Env:SINDAGAL_CONFIGURED -Value($true)
+    #Set-Item -Path Env:SINDAGAL_INIT_VMP -Value($isVirtualMachineEnabled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_VMP',$isVirtualMachineEnabled)
+    #Set-Item -Path Env:SINDAGAL_CONFIGURED -Value($true)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_CONFIGURED', $true)
 }
 
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
-# Tested ✓
+# Tested âœ“
 function Set-AddonState {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges!"
@@ -66,15 +73,20 @@ function Set-AddonState {
     $isCascadiaCodeInstalled = Test-Glyphs
     Write-Host "Terminal has Cascadia Code Nerd Font glyphs installed?: ${isCascadiaCodeInstalled}"
 
-    Set-Item -Path Env:SINDAGAL_INIT_CHOCO -Value($isChocoInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_WTER -Value($isWindowsTerminalInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_OMP -Value($isOhMyPoshInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_PG -Value($isPoshGitInstalled)
-    Set-Item -Path Env:SINDAGAL_INIT_CCNF -Value($isCascadiaCodeInstalled)
+    #Set-Item -Path Env:SINDAGAL_INIT_CHOCO -Value($isChocoInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_CHOCO', $isChocoInstalled)
+    #Set-Item -Path Env:SINDAGAL_INIT_WTER -Value($isWindowsTerminalInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_WTER', $isWindowsTerminalInstalled)
+    #Set-Item -Path Env:SINDAGAL_INIT_OMP -Value($isOhMyPoshInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_OMP', $isOhMyPoshInstalled)
+    #Set-Item -Path Env:SINDAGAL_INIT_PG -Value($isPoshGitInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_PG', $isPoshGitInstalled)
+    #Set-Item -Path Env:SINDAGAL_INIT_CCNF -Value($isCascadiaCodeInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_CCNF', $isCascadiaCodeInstalled)
 }
 
 #############################################################################################################################################
-# Tested ✓
+# Tested âœ“
 function Test-WindowsTerminal {
     [OutputType([boolean])]
 
@@ -84,7 +96,7 @@ function Test-WindowsTerminal {
     return $isWindowsTerminalInstalled
 }
 
-# Tested ✓
+# Tested âœ“
 function Enable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -114,7 +126,7 @@ function Enable-WindowsTerminal {
 }
 
 
-# Tested ✓
+# Tested âœ“
 function Disable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -148,7 +160,7 @@ function Restore-WindowsTerminal {
 
 #############################################################################################################################################
 
-# Tested ✓
+# Tested âœ“
 function Test-Chocolatey {
     [OutputType([boolean])]
 
@@ -158,7 +170,7 @@ function Test-Chocolatey {
     return $isChocoInstalled
 }
 
-# Tested ✓
+# Tested âœ“
 function Enable-Chocolatey {    
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -180,7 +192,7 @@ function Enable-Chocolatey {
    choco upgrade chocolatey -y
 }
 
-# Tested ✓
+# Tested âœ“
 function Disable-Chocolatey {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -199,7 +211,7 @@ function Disable-Chocolatey {
 
 #############################################################################################################################################
 
-# Tested ✓
+# Tested âœ“
 function Test-OhMyPosh {
     [OutputType([boolean])]
 
@@ -209,7 +221,7 @@ function Test-OhMyPosh {
     return $isOhMyPoshInstalled
 }
 
-# Tested ✓
+# Tested âœ“
 function Enable-OhMyPosh {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -218,7 +230,7 @@ function Enable-OhMyPosh {
      ECHO Y | powershell Install-Module oh-my-posh -Force -Scope CurrentUser
 }
 
-# Tested ✓
+# Tested âœ“
 function Disable-OhMyPosh {
     if(Test-OhMyPosh){
     	Write-Host "Removing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
@@ -228,7 +240,7 @@ function Disable-OhMyPosh {
 
 #############################################################################################################################################
 
-# Tested ✓
+# Tested âœ“
 function Test-PoshGit {
     [OutputType([boolean])]
 
@@ -238,7 +250,7 @@ function Test-PoshGit {
     return $isPoshGitInstalled
 }
 
-# Tested ✓
+# Tested âœ“
 function Enable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -247,7 +259,7 @@ function Enable-PoshGit {
      ECHO Y | powershell Install-Module posh-git -Force -Scope CurrentUser
 }
 
-# Tested ✓
+# Tested âœ“
 function Disable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -260,7 +272,7 @@ function Disable-PoshGit {
 
 #############################################################################################################################################
 
-# Tested ✓
+# Tested âœ“
 function Test-Glyphs{
     # For some reason return type annotation does not work if importing library?
     [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null 
@@ -270,7 +282,7 @@ function Test-Glyphs{
     return $isCascadiaCodeInstalled
 }
 
-# Tested ✓
+# Tested âœ“
 function Add-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -304,7 +316,7 @@ function Add-Glyphs {
     #}
 }
 
-# Tested ✓
+# Tested âœ“
 function Remove-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -459,7 +471,7 @@ function Register-DistroAddons {
 # Install-Font Function Author: Mick Pletcher
 # Published: Tuesday, June 29, 2021
 # Source: https://mickitblog.blogspot.com/2021/06/powershell-install-fonts.html
-# Tested ✓
+# Tested âœ“
 function Install-Font {
     param  
     (  
@@ -533,7 +545,7 @@ function Install-Font {
     } 
 }
 
-# Tested ✓
+# Tested âœ“
 function Remove-Font {
     param  
     (  
