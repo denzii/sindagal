@@ -373,6 +373,20 @@ function Test-WSL {
 }
 
 
+workflow Test-Workflow
+{
+    
+    Write-Host "Eben"
+    $confirmation = Read-Host " The next step(s) require a reboot... Press y and hit enter when ready!"
+
+    if ($confirmation -eq 'y') {
+      Restart-Computer -Wait -ComputerName localhost
+    }    
+    
+    Write-Host "PC rebooted and I can see this message so it must have worked"
+}
+
+
 function Enable-WSL {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -612,7 +626,8 @@ Export-ModuleMember -function `
     New-Distro,`
     Register-DistroAddons,`
     Remove-Distro,`
-    Test-Elevation
+    Test-Elevation,`
+    Test-Workflow
 
 # TODO: Get the windows terminal settings path dynamically without hardcode
 # TODO: Handle the case where windows terminal initially exists (Write/Delete in settings.json rather than replacing completely)
