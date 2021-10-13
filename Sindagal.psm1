@@ -352,7 +352,6 @@ function Test-WSL2Support {
 }
 
 function Test-WSL {
-    [OutputType([boolean])]
      #below does not work because system32 always has wsl.exe after first installation no matter what
     #$wslCommandOutput = [string](Get-Command -Name wsl.exe -ErrorAction SilentlyContinue)
     #$isWslInstalled = !([string]::IsNullOrEmpty($wslCommandOutput))
