@@ -3,7 +3,7 @@ $singadalModuleDir = "$userPsModulesDir\Sindagal"
 
 If(!(test-path $singadalModuleDir))
 {
-    New-Item -Path $singadalModulesDir -ItemType Directory
+    New-Item -Path $singadalModuleDir -ItemType Directory
 }
 
 $sindagalModulePath = $singadalModuleDir + "\Sindagal.psm1"
