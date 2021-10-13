@@ -389,20 +389,19 @@ function Enable-WSL {
 	    		Write-Host "Host Supports WSL2..." -ForegroundColor White -BackgroundColor Black
 	   			Write-Host "Enabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black
             	ECHO N | powershell Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+                
                 $installFolder = "C:\ProgramData\Sindagal\" 
                 $installFile = "C:\ProgramData\Sindagal\wsl_update_x64.msi"   
+
 		If(!(test-path $installFolder)){
        	    		New-Item -Path $installFolder -ItemType "directory"
 		} 
 	    		Write-Host "Downloading WSL2 Kernel Update from official source: https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi" -ForegroundColor White -BackgroundColor Black
             	Invoke-WebRequest -uri https://wslstorestorage.blob.core.windows.net/wslblob/wsl_update_x64.msi -Method "GET"  -OutFile $installFile 
             
-            	$kernelUpdateFullPath = Resolve-Path $installFile
-            
             	# silent install
 	    		Write-Host "Silently running the WSL2 Kernel Update" -ForegroundColor White -BackgroundColor Black
-            	$installerParams = @("/qn", "/i", $kernelUpdateFullPath)
-            	Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
+            	$installerParams = @("/qn", "/i", $installFile);Start-Process "msiexec.exe" -ArgumentList $installerParams -Wait -NoNewWindow
         	}
     	Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
     	Write-Host "WSL has been enabled, please restart for the changes to take effect..." -ForegroundColor White -BackgroundColor Black
@@ -421,11 +420,11 @@ function Disable-WSL {
     if(Test-WSL){
         try {
             Write-Host "Disabling WSL..." -ForegroundColor White -BackgroundColor Black
-            Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+             ECHO N | powershell Disable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
 
             if (Test-WSL2Support){
     		Write-Host "Disabling Virtual Machine Platform..." -ForegroundColor White -BackgroundColor Black                
-		Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
+		 ECHO N | powershell Disable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform
                
                 $installFolder = "C:\ProgramData\Sindagal\" 
                 $installFile = "C:\ProgramData\Sindagal\wsl_update_x64.msi" 
