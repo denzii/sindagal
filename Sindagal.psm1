@@ -61,6 +61,12 @@ function Set-DistroState {
 		foreach ($line in $wslListOutput) {
   			$lineIsEmpty = ("" -eq $line) -or ([string]::IsNullOrWhiteSpace($line))
   			$lineIsBullshit = $line -eq "Windows Subsystem for Linux Distributions:"
+			$noDistrosInstalled = $line -eq "Windows Subsystem for Linux has no installed distributions."
+			
+			if ($noDistrosInstalled) { 
+				Write-Host $noDistrosInstalled
+				break
+			}
   			if ($lineIsEmpty -or $lineIsBullshit) { continue } 
  
   			if ($line -Match "(([a-zA-Z]*) ([(Default)])*)"){
