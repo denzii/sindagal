@@ -19,36 +19,66 @@ function Set-EnvState {
     $osArchitectureBits = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[1]
     Write-Host "System has x${osArchitectureBits} bits" 
     #Set-Item -Path Env:SINDAGAL_OS_BITS -Value($osArchitectureBits)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_BITS', $osArchitectureBits)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_BITS', $osArchitectureBits, "machine")
 
     $osArchitecture = ($env:PROCESSOR_ARCHITECTURE -split '(?=\d)',2)[0] 
     Write-Host "System has ${osArchitecture} processor"
     #Set-Item -Path Env:SINDAGAL_OS_ARCHITECTURE -Value($osArchitecture)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_ARCHITECTURE', $osArchitecture)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_ARCHITECTURE', $osArchitecture, "machine")
 
     $osBuild = [int]((wmic os get BuildNumber) -split  '(?=\d)',2)[3]
     Write-Host "OS build is ${osBuild}" 
     #Set-Item -Path Env:SINDAGAL_OS_BUILD -Value($osBuild)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_BUILD', $osBuild)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_BUILD', $osBuild, "machine")
 
     $osVersion = [int](Get-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion").ReleaseId 
     Write-Host "OS version is ${osVersion}" 
     #Set-Item -Path Env:SINDAGAL_OS_VER -Value($osVersion)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_VER', $osVersion)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_OS_VER', $osVersion, "machine")
 
-    $isWslEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq Microsoft-Windows-Subsystem-Linux).State) -eq "Enabled"
+    $isWslEnabled = Test-WSL
     Write-Host "System has WSL enabled?: ${isWslEnabled}"
     #Set-Item -Path Env:SINDAGAL_INIT_WSL -Value($isWslEnabled)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_WSL', $isWslEnabled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_WSL', $isWslEnabled, "machine")
 
     $isVirtualMachineEnabled = ((Get-WindowsOptionalFeature -Online | Where-Object FeatureName -eq VirtualMachinePlatform).State) -eq "Enabled"
     Write-Host "System has Virtual Machine Platform enabled?: ${isVirtualMachineEnabled}"
     #Set-Item -Path Env:SINDAGAL_INIT_VMP -Value($isVirtualMachineEnabled)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_VMP',$isVirtualMachineEnabled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_VMP',$isVirtualMachineEnabled, "machine")
     #Set-Item -Path Env:SINDAGAL_CONFIGURED -Value($true)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_CONFIGURED', $true)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_CONFIGURED', $true, "machine")
+
+    Set-DistroState
 }
 
+function Set-DistroState {
+    if(Test-WSL) {
+		# Temporarily set console output encoding to unicode to read the wsl --list results properly
+		[Console]::OutputEncoding = [Text.Encoding]::Unicode
+
+		# Split by \r*\n to work around the issue of "D  E  B  I  A  N" 
+		$wslListOutput = (wsl --list) -split "\r*\n"
+		foreach ($line in $wslListOutput) {
+  			$lineIsEmpty = ("" -eq $line) -or ([string]::IsNullOrWhiteSpace($line))
+  			$lineIsBullshit = $line -eq "Windows Subsystem for Linux Distributions:"
+  			if ($lineIsEmpty -or $lineIsBullshit) { continue } 
+ 
+  			if ($line -Match "(([a-zA-Z]*) ([(Default)])*)"){
+     			$distroName = ($line -split ' ',2)[0]  
+				
+     			Write-Host "Default WSL Distro is: ${distroName}" 
+     			[System.Environment]::SetEnvironmentVariable("SINDAGAL_DEFAULT_DISTRO", $distroName, "machine")
+  			} else {
+				Write-Host "${line} Distro is installed"
+     			$distroName = $line.ToUpper()
+     			$variablePath = "Env:SINDAGAL_INIT_DISTRO_${distroName}"
+     			[System.Environment]::SetEnvironmentVariable("SINDAGAL_INIT_DISTRO_${distroName}", $true, "machine")
+  			}
+		}
+		# set back to utf8 so the terminal won't get messed up
+		[Console]::OutputEncoding = [Text.Encoding]::UTF8
+	}
+}
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
 # Tested Ã¢Å“â€œ
@@ -74,15 +104,15 @@ function Set-AddonState {
     Write-Host "Terminal has Cascadia Code Nerd Font glyphs installed?: ${isCascadiaCodeInstalled}"
 
     #Set-Item -Path Env:SINDAGAL_INIT_CHOCO -Value($isChocoInstalled)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_CHOCO', $isChocoInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_CHOCO', $isChocoInstalled, "machine")
     #Set-Item -Path Env:SINDAGAL_INIT_WTER -Value($isWindowsTerminalInstalled)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_WTER', $isWindowsTerminalInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_WTER', $isWindowsTerminalInstalled, "machine")
     #Set-Item -Path Env:SINDAGAL_INIT_OMP -Value($isOhMyPoshInstalled)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_OMP', $isOhMyPoshInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_OMP', $isOhMyPoshInstalled, "machine")
     #Set-Item -Path Env:SINDAGAL_INIT_PG -Value($isPoshGitInstalled)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_PG', $isPoshGitInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_PG', $isPoshGitInstalled, "machine")
     #Set-Item -Path Env:SINDAGAL_INIT_CCNF -Value($isCascadiaCodeInstalled)
-    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_CCNF', $isCascadiaCodeInstalled)
+    [System.Environment]::SetEnvironmentVariable('SINDAGAL_INIT_CCNF', $isCascadiaCodeInstalled, "machine")
 }
 
 #############################################################################################################################################
@@ -372,21 +402,6 @@ function Test-WSL {
     return (Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux).State -eq "Enabled" 
 }
 
-
-workflow Test-Workflow
-{
-    
-    Write-Host "Eben"
-    $confirmation = Read-Host " The next step(s) require a reboot... Press y and hit enter when ready!"
-
-    if ($confirmation -eq 'y') {
-      Restart-Computer -Wait -ComputerName localhost
-    }    
-    
-    Write-Host "PC rebooted and I can see this message so it must have worked"
-}
-
-
 function Enable-WSL {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -626,8 +641,7 @@ Export-ModuleMember -function `
     New-Distro,`
     Register-DistroAddons,`
     Remove-Distro,`
-    Test-Elevation,`
-    Test-Workflow
+    Test-Elevation
 
 # TODO: Get the windows terminal settings path dynamically without hardcode
 # TODO: Handle the case where windows terminal initially exists (Write/Delete in settings.json rather than replacing completely)
