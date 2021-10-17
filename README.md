@@ -1,6 +1,9 @@
 # sindagal
 
-WORK IN PROGRESS                                         
+WORK IN PROGRESS          
+One liner for testing system env state: https://pastebin.com/Ay0nKfnp
+
+                               
                                          **Welcome to Sindagal Windows!** 
 "                                                                                                                        
 "                                              This script will:                                                         
