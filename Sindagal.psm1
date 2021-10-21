@@ -9,7 +9,6 @@ function Test-Elevation {
 
 #############################################################################################################################################
 # Set Environment Variables For Initial Host System State
-# Tested Ã¢Å“â€œ
 function Set-EnvState {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges! Please run it through an elevated powershell prompt."
@@ -89,7 +88,6 @@ function Set-DistroState {
 }
 #############################################################################################################################################
 # Set Environment Variables For Initial System State Pertaining to Windows Terminal & terminal polyfills
-# Tested Ã¢Å“â€œ
 function Set-AddonState {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges!"
@@ -124,7 +122,6 @@ function Set-AddonState {
 }
 
 #############################################################################################################################################
-# Tested Ã¢Å“â€œ
 function Test-WindowsTerminal {
     [OutputType([boolean])]
 
@@ -134,7 +131,6 @@ function Test-WindowsTerminal {
     return $isWindowsTerminalInstalled
 }
 
-# Tested Ã¢Å“â€œ
 function Enable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -164,7 +160,6 @@ function Enable-WindowsTerminal {
 }
 
 
-# Tested Ã¢Å“â€œ
 function Disable-WindowsTerminal {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -198,7 +193,6 @@ function Restore-WindowsTerminal {
 
 #############################################################################################################################################
 
-# Tested Ã¢Å“â€œ
 function Test-Chocolatey {
     [OutputType([boolean])]
 
@@ -208,7 +202,6 @@ function Test-Chocolatey {
     return $isChocoInstalled
 }
 
-# Tested Ã¢Å“â€œ
 function Enable-Chocolatey {    
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -230,7 +223,6 @@ function Enable-Chocolatey {
    choco upgrade chocolatey -y
 }
 
-# Tested Ã¢Å“â€œ
 function Disable-Chocolatey {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -249,7 +241,6 @@ function Disable-Chocolatey {
 
 #############################################################################################################################################
 
-# Tested Ã¢Å“â€œ
 function Test-OhMyPosh {
     [OutputType([boolean])]
 
@@ -259,7 +250,6 @@ function Test-OhMyPosh {
     return $isOhMyPoshInstalled
 }
 
-# Tested Ã¢Å“â€œ
 function Enable-OhMyPosh {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -268,7 +258,6 @@ function Enable-OhMyPosh {
      ECHO Y | powershell Install-Module oh-my-posh -Force -Scope CurrentUser
 }
 
-# Tested Ã¢Å“â€œ
 function Disable-OhMyPosh {
     if(Test-OhMyPosh){
     	Write-Host "Removing Oh my posh powershell module through PowerShellGet" -ForegroundColor White -BackgroundColor Black
@@ -278,7 +267,6 @@ function Disable-OhMyPosh {
 
 #############################################################################################################################################
 
-# Tested Ã¢Å“â€œ
 function Test-PoshGit {
     [OutputType([boolean])]
 
@@ -288,7 +276,6 @@ function Test-PoshGit {
     return $isPoshGitInstalled
 }
 
-# Tested Ã¢Å“â€œ
 function Enable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -297,7 +284,6 @@ function Enable-PoshGit {
      ECHO Y | powershell Install-Module posh-git -Force -Scope CurrentUser
 }
 
-# Tested Ã¢Å“â€œ
 function Disable-PoshGit {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -310,7 +296,6 @@ function Disable-PoshGit {
 
 #############################################################################################################################################
 
-# Tested Ã¢Å“â€œ
 function Test-Glyphs{
     # For some reason return type annotation does not work if importing library?
     [System.Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null 
@@ -320,13 +305,11 @@ function Test-Glyphs{
     return $isCascadiaCodeInstalled
 }
 
-# Tested Ã¢Å“â€œ
 function Add-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
     }
     
-    #if(!(Test-Glyphs)){   
     	$cascadiaCodeURL = "https://github.com/AaronFriel/nerd-fonts/releases/download/v1.2.0/CascadiaCode.Nerd.Font.Complete.ttf"
     	
 	$cascadiaDestinationPath = "C:\ProgramData\Sindagal\cascadia-code"
@@ -351,10 +334,8 @@ function Add-Glyphs {
 
 	Write-Host "Restarting Powershell session for changes to take effect..." -ForegroundColor White -BackgroundColor Black
 	Get-Process -Id $PID | Select-Object -ExpandProperty Path | ForEach-Object { Invoke-Command { & "$_" } -NoNewScope }
-    #}
 }
 
-# Tested Ã¢Å“â€œ
 function Remove-Glyphs {
     if(!(Test-Elevation)){
     	throw "This requires admin privileges, please run it through an elevated powershell prompt"
@@ -508,7 +489,6 @@ function Register-DistroAddons {
 # Install-Font Function Author: Mick Pletcher
 # Published: Tuesday, June 29, 2021
 # Source: https://mickitblog.blogspot.com/2021/06/powershell-install-fonts.html
-# Tested Ã¢Å“â€œ
 function Install-Font {
     param  
     (  
@@ -582,7 +562,6 @@ function Install-Font {
     } 
 }
 
-# Tested Ã¢Å“â€œ
 function Remove-Font {
     param  
     (  
